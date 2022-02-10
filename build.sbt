@@ -20,10 +20,10 @@ val flinkDependencies = Seq(
 
 lazy val kafka_producer = project
   .settings(
-    libraryDependencies += "org.apache.kafka" % "kafka-clients" % "2.8.0",
+    libraryDependencies += "org.apache.kafka" % "kafka-clients" % "3.1.0"
   )
 
-libraryDependencies += "org.apache.flink" %% "flink-connector-kafka" % "1.13.1"
+libraryDependencies += "org.apache.flink" %% "flink-connector-kafka" % "1.14.3"
 
 lazy val root = (project in file(".")).
   settings(

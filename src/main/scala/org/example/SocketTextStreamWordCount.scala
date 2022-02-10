@@ -1,10 +1,11 @@
 package org.example
 
+import org.apache.flink.api.common.eventtime.WatermarkStrategy
 import org.apache.flink.api.common.serialization.SimpleStringSchema
+import org.apache.flink.connector.kafka.source.KafkaSource
+import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer
+import org.apache.flink.connector.kafka.source.reader.deserializer.KafkaRecordDeserializationSchema
 import org.apache.flink.streaming.api.scala._
-import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer
-
-import java.util.Properties
 
 object SocketTextStreamWordCount {
 
@@ -12,9 +13,24 @@ object SocketTextStreamWordCount {
 
     val env = StreamExecutionEnvironment.getExecutionEnvironment
 
-    env.getConfig.setAutoWatermarkInterval(30000L)
+    //KafkaSource.builder[String].setDeserializer(KafkaRecordDeserializationSchema.valueOnly(classOf[Nothing]))
 
-    val properties = new Properties();
+    env.getConfig.setAutoWatermarkInterval(15000L)
+
+    val source = KafkaSource.builder[String]
+      .setBootstrapServers("localhost:9092")
+      .setTopics("records")
+      //.setGroupId("my-group")
+      .setStartingOffsets(OffsetsInitializer.earliest)
+      .setValueOnlyDeserializer(new SimpleStringSchema())
+      .build
+
+    val text = env.fromSource(source, WatermarkStrategy.forMonotonousTimestamps(), "Kafka Source")
+      .print()
+
+    env.execute("test file source")
+
+   /* val properties = new Properties();
     properties.setProperty("bootstrap.servers", "localhost:9092");
     properties.setProperty("group.id", "topic");
 
@@ -31,7 +47,7 @@ object SocketTextStreamWordCount {
     source.print()
 
     env.execute("test file source")
-
+*/
 
     /*kafkaConsumer.assignTimestampsAndWatermarks(
       WatermarkStrategy

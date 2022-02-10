@@ -1,6 +1,6 @@
 import org.apache.kafka.clients.producer.ProducerConfig._
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
-import org.apache.kafka.common.serialization.{IntegerSerializer, LongSerializer}
+import org.apache.kafka.common.serialization.{LongSerializer, StringSerializer}
 
 import java.time.Instant
 import java.util.Properties
@@ -22,20 +22,20 @@ object KafkaProducerApp extends App {
     properties.put(ACKS_CONFIG, "all")
     properties.put(RETRIES_CONFIG, 0)
     properties.put(KEY_SERIALIZER_CLASS_CONFIG, classOf[LongSerializer])
-    properties.put(VALUE_SERIALIZER_CLASS_CONFIG, classOf[IntegerSerializer])
+    properties.put(VALUE_SERIALIZER_CLASS_CONFIG, classOf[StringSerializer])
 
     properties
   }
 
-  val producer = new KafkaProducer[Long, Int](properties)
+  val producer = new KafkaProducer[Long, String](properties)
 
   var key = 0L
 
   while (true) {
     val timestamp = Instant.now.toEpochMilli
     key += 1
-    val value = Random.nextInt(100) // TODO: some meaningful value generation?
-    val record = new ProducerRecord(topic, null, timestamp, key, value)
+    val value = Random.nextInt(100)
+    val record = new ProducerRecord(topic, null, timestamp, key, value.toString)
 
     producer.send(record)
 

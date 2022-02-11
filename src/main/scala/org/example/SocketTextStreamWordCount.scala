@@ -5,9 +5,8 @@ import org.apache.flink.api.common.serialization.SimpleStringSchema
 import org.apache.flink.connector.kafka.source.KafkaSource
 import org.apache.flink.connector.kafka.source.enumerator.initializer.OffsetsInitializer
 import org.apache.flink.streaming.api.scala._
-import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows
+import org.apache.flink.streaming.api.windowing.assigners.TumblingProcessingTimeWindows
 import org.apache.flink.streaming.api.windowing.time.Time
-import org.apache.flink.streaming.api.scala.DataStream
 
 object SocketTextStreamWordCount {
 
@@ -23,15 +22,14 @@ object SocketTextStreamWordCount {
       .setValueOnlyDeserializer(new SimpleStringSchema())
       .build
 
-    val text: DataStream[Int] = env.fromSource(source, WatermarkStrategy.noWatermarks(), "Kafka Source")
-      .map(v => v.toInt)
-
-
-      text.windowAll(TumblingEventTimeWindows.of(Time.seconds(5)))
-
+    val text = env.fromSource(source, WatermarkStrategy.noWatermarks(), "Kafka Source")
+      .map(v => Integer.valueOf(v))
+      .windowAll(TumblingProcessingTimeWindows.of(Time.seconds(15)))
+      .sum(0)
       .print()
 
     env.execute("test file source")
 
   }
+
 }
